@@ -11,22 +11,42 @@ const {
     sendAndConfirmTransaction
 } = require("@solana/web3.js");
 
-const DEMO_FROM_SECRET_KEY = new Uint8Array(
-    [
-        160,  20, 189, 212, 129, 188, 171, 124,  20, 179,  80,
-         27, 166,  17, 179, 198, 234,  36, 113,  87,   0,  46,
-        186, 250, 152, 137, 244,  15,  86, 127,  77,  97, 170,
-         44,  57, 126, 115, 253,  11,  60,  90,  36, 135, 177,
-        185, 231,  46, 155,  62, 164, 128, 225, 101,  79,  69,
-        101, 154,  24,  58, 214, 219, 238, 149,  86
-      ]            
-);
+let localWallet = require('./wallet.json');
+
+const LOCAL_SECRET_KEY = new Uint8Array(localWallet.secretKey);
+
+const getWallet = async() => {
+    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+    var wallet = Keypair.generate();
+    console.log(wallet);
+}
+//getWallet();
+
+const testBalance = async() => {
+    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+    var wallet = Keypair.fromSecretKey(LOCAL_SECRET_KEY);
+    const walletBalance = await connection.getBalance(
+        new PublicKey(wallet.publicKey)
+    );
+    
+    //console.log("Wallet: ", wallet.publicKey);
+    console.log("Balance: ", parseInt(walletBalance) / LAMPORTS_PER_SOL, " SOL");
+    //console.log(parseInt(walletBalance) / 2);
+    //console.log(walletBalance / 2);
+    return parseInt(walletBalance);
+}
+
+//testBalance();
+
+
 
 const transferSol = async() => {
     const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
 
     // Get Keypair from Secret Key
-    var from = Keypair.fromSecretKey(DEMO_FROM_SECRET_KEY);
+    var from = Keypair.fromSecretKey(LOCAL_SECRET_KEY);
 
     // Other things to try: 
     // 1) Form array from userSecretKey
@@ -57,12 +77,16 @@ const transferSol = async() => {
 
     console.log("Airdrop completed for the Sender account");
 
+    // calculate half of the Sender's balance in SOL
+    let halfSenderBalance = await testBalance();
+    halfSenderBalance = halfSenderBalance / 2;
+
     // Send money from "from" wallet and into "to" wallet
     var transaction = new Transaction().add(
         SystemProgram.transfer({
             fromPubkey: from.publicKey,
             toPubkey: to.publicKey,
-            lamports: LAMPORTS_PER_SOL / 100
+            lamports: halfSenderBalance
         })
     );
 
@@ -73,6 +97,8 @@ const transferSol = async() => {
         [from]
     );
     console.log('Signature is ', signature);
+
+    testBalance();
 }
 
 transferSol();
