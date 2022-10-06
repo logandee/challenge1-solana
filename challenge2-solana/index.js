@@ -30,6 +30,9 @@ const testBalance = async() => {
     const walletBalance = await connection.getBalance(
         new PublicKey(wallet.publicKey)
     );
+
+    //console.log(wallet);
+    //console.log(new PublicKey(wallet.publicKey));
     
     //console.log("Wallet: ", wallet.publicKey);
     console.log("Balance: ", parseInt(walletBalance) / LAMPORTS_PER_SOL, " SOL");
@@ -38,7 +41,7 @@ const testBalance = async() => {
     return parseInt(walletBalance);
 }
 
-//testBalance();
+testBalance();
 
 
 
@@ -101,4 +104,4 @@ const transferSol = async() => {
     testBalance();
 }
 
-transferSol();
+//transferSol();
